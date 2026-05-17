@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "rm -rf dist && mkdir -p dist && cp index.html styles.css script.js dist/"
+    "build": "rm -rf dist && mkdir -p dist && cp index.html styles.css script.js dist/",
+    "start": "node server.js"
   }
 }
