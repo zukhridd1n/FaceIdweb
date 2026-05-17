@@ -236,7 +236,7 @@ async function enterSite(data = {}) {
   applyUser(user);
   verifyResult.textContent = "Moslik foizi shu yerda chiqadi.";
   if (profileUpdateResult) profileUpdateResult.textContent = "Yangilash natijasi shu yerda chiqadi.";
-  setAdminView("profile");
+  setAdminView("main");
   document.body.classList.add("is-home");
   authPanel.classList.add("hidden");
   homeView.classList.remove("hidden");
