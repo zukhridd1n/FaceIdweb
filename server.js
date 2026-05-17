@@ -1,10 +1,12 @@
 const http = require("http");
+const https = require("https");
 const fs = require("fs");
 const path = require("path");
 
 const host = process.env.HOST || "0.0.0.0";
 const startPort = Number(process.env.PORT || 5173);
 const root = __dirname;
+const apiProxyTarget = process.env.API_PROXY_TARGET || "http://167.99.131.184:8000";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -29,6 +31,12 @@ function send(res, status, body, type = "text/plain; charset=utf-8") {
 function createServer() {
   return http.createServer((req, res) => {
     const url = new URL(req.url, `http://${host}`);
+
+    if (url.pathname.startsWith("/api/")) {
+      proxyApiRequest(req, res, url);
+      return;
+    }
+
     const safePath = path.normalize(decodeURIComponent(url.pathname)).replace(/^(\.\.[/\\])+/, "");
     const requestedPath = safePath === "/" ? "/index.html" : safePath;
     const filePath = path.join(root, requestedPath);
@@ -47,6 +55,30 @@ function createServer() {
       send(res, 200, data, mimeTypes[path.extname(filePath)] || "application/octet-stream");
     });
   });
+}
+
+function proxyApiRequest(req, res, url) {
+  const target = new URL(`${url.pathname}${url.search}`, apiProxyTarget);
+  const transport = target.protocol === "https:" ? https : http;
+  const headers = { ...req.headers, host: target.host };
+
+  const proxyReq = transport.request(
+    target,
+    {
+      method: req.method,
+      headers,
+    },
+    (proxyRes) => {
+      res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+      proxyRes.pipe(res);
+    },
+  );
+
+  proxyReq.on("error", () => {
+    send(res, 502, "API proxy error");
+  });
+
+  req.pipe(proxyReq);
 }
 
 function listen(port) {
