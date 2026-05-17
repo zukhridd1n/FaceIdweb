@@ -5,7 +5,8 @@ const path = require("path");
 
 const host = process.env.HOST || "0.0.0.0";
 const startPort = Number(process.env.PORT || 5173);
-const root = __dirname;
+const distRoot = path.join(__dirname, "dist");
+const root = fs.existsSync(path.join(distRoot, "index.html")) ? distRoot : __dirname;
 const apiProxyTarget = process.env.API_PROXY_TARGET || "http://167.99.131.184:8000";
 
 const mimeTypes = {
