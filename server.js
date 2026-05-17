@@ -2,7 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const host = "127.0.0.1";
+const host = process.env.HOST || "0.0.0.0";
 const startPort = Number(process.env.PORT || 5173);
 const root = __dirname;
 

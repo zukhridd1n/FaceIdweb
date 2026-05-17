@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000";
+const API_BASE = "http://167.99.131.184:8000";
 
 const state = {
   token: localStorage.getItem("face_auth_token") || "",
