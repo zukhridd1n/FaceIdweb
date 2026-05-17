@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#030817" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>Face ID Auth</title>
+    <link rel="stylesheet" href="./styles.css?v=20260517-scroll1" />
+    <script>
+      localStorage.removeItem("face_auth_token");
+    </script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="auth-panel">
+        <div class="brand-row">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7Zm2 4.1a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8Zm6 0a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8Zm-6.8 5.2a1 1 0 0 1 1.4.1 3 3 0 0 0 4.8 0 1 1 0 1 1 1.5 1.3 5 5 0 0 1-7.8 0 1 1 0 0 1 .1-1.4Z" />
+            </svg>
+          </div>
+          <div>
+            <h1>Face ID Login</h1>
+            <p>Xavfsiz kirish</p>
+          </div>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Auth tabs">
+          <button class="tab active" data-tab="login" type="button">Login</button>
+          <button class="tab" data-tab="register" type="button">Registratsiya</button>
+        </div>
+
+        <section id="login" class="tab-panel active">
+          <div class="login-switch" role="tablist" aria-label="Login turi">
+            <button class="mode active" data-mode="password" type="button">Nomer parol</button>
+            <button class="mode" data-mode="face" type="button">Face ID</button>
+          </div>
+
+          <form id="passwordLoginForm" class="form-stack">
+            <label>
+              <span>Telefon raqam</span>
+              <input name="phone" type="tel" minlength="5" maxlength="32" placeholder="+998901234567" required />
+            </label>
+            <label>
+              <span>Parol</span>
+              <input name="password" type="password" minlength="6" maxlength="128" placeholder="Kamida 6 belgi" required />
+            </label>
+            <button class="primary-btn" type="submit">Login</button>
+          </form>
+
+          <form id="faceLoginForm" class="form-stack hidden">
+            <div class="camera-card">
+              <video id="faceLoginVideo" playsinline muted></video>
+              <canvas id="faceLoginCanvas" class="hidden"></canvas>
+            </div>
+            <p id="faceLoginStatus" class="face-status">Yuzingizni kameraga qarating.</p>
+          </form>
+        </section>
+
+        <section id="register" class="tab-panel">
+          <form id="registerForm" class="form-stack">
+            <label>
+              <span>Ism</span>
+              <input name="name" type="text" minlength="2" maxlength="100" placeholder="Ismingiz" required />
+            </label>
+            <label>
+              <span>Telefon raqam</span>
+              <input name="phone" type="tel" minlength="5" maxlength="32" placeholder="+998901234567" required />
+            </label>
+            <label>
+              <span>Parol</span>
+              <input name="password" type="password" minlength="6" maxlength="128" placeholder="Kamida 6 belgi" required />
+            </label>
+            <div class="camera-card">
+              <video id="registerVideo" playsinline muted></video>
+              <canvas id="registerCanvas" class="hidden"></canvas>
+              <div class="camera-actions">
+                <button class="secondary-btn" data-camera="register" type="button">Kamerani yoqish</button>
+                <button class="secondary-btn" data-shot="register" type="button">Rasmga olish</button>
+              </div>
+            </div>
+            <label>
+              <span>Yoki rasm yuklang</span>
+              <input name="image" type="file" accept="image/*" />
+            </label>
+            <button class="primary-btn" type="submit">Ro‘yxatdan o‘tish</button>
+          </form>
+        </section>
+
+        <p id="authMessage" class="auth-message">Tayyor.</p>
+      </section>
+
+      <section id="homeView" class="home-panel hidden">
+        <div class="mobile-browser-chrome" aria-hidden="true">
+          <div class="window-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="mobile-address">Face ID Auth</div>
+          <div class="mobile-title">Taxi Admin Panel</div>
+        </div>
+        <aside class="admin-sidebar">
+          <div>
+            <span class="sidebar-kicker">Menu</span>
+            <h2>Sozlamalar</h2>
+            <button class="mobile-close" type="button" aria-label="Menuni yopish">×</button>
+          </div>
+          <nav class="admin-menu" aria-label="Dashboard menyu">
+            <button class="admin-nav active" data-view="main" type="button">🏠 Asosiy menu</button>
+            <button class="admin-nav" data-view="verify" type="button">🔐 Face ID Verify</button>
+            <button class="admin-nav" data-view="profile" type="button">⚙️ Profile update</button>
+          </nav>
+          <button id="logoutBtn" class="sidebar-logout" data-action="logout" type="button">Tizimdan chiqish</button>
+        </aside>
+
+        <section class="admin-main">
+          <header class="admin-topbar">
+            <div class="admin-brand">
+              <div class="admin-avatar" aria-hidden="true">FA</div>
+            </div>
+          </header>
+
+          <section class="admin-view active" data-view-panel="main">
+            <div class="welcome-block">
+              <h2 id="greeting">Hello user</h2>
+              <p id="profileText">Profil yuklanmoqda...</p>
+            </div>
+            <div class="dashboard-cards">
+              <article class="settings-card action-card" data-view="profile">
+                <div class="settings-icon">ID</div>
+                <h3>Profil</h3>
+                <p>JWT orqali himoyalangan profil ma’lumotlari.</p>
+              </article>
+              <article class="settings-card action-card" data-view="verify">
+                <div class="settings-icon">AI</div>
+                <h3>Face ID</h3>
+                <p>Yuz tasviri orqali kirish va moslikni tekshirish.</p>
+              </article>
+              <article class="settings-card">
+                <div class="settings-icon">SEC</div>
+                <h3>Xavfsizlik</h3>
+                <p>Login, token va verifikatsiya amallari bir joyda.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="admin-view" data-view-panel="verify">
+            <div class="settings-shell">
+              <div class="settings-head">
+                <div class="settings-icon">🔐</div>
+                <div>
+                  <h2>Face ID Verify</h2>
+                  <p>Yangi rasm olib, moslik foizini tekshiring.</p>
+                </div>
+              </div>
+              <div class="settings-grid">
+                <div class="camera-card">
+                  <video id="verifyVideo" playsinline muted></video>
+                  <canvas id="verifyCanvas" class="hidden"></canvas>
+                  <div class="camera-actions">
+                    <button class="secondary-btn" data-camera="verify" type="button">Kamerani yoqish</button>
+                    <button id="verifyFaceBtn" class="primary-btn" type="button">Tekshirish</button>
+                  </div>
+                </div>
+                <div id="verifyResult" class="verify-result">Moslik foizi shu yerda chiqadi.</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-view" data-view-panel="profile">
+            <div class="settings-shell">
+              <div class="settings-head">
+                <div class="settings-icon">⚙️</div>
+                <div>
+                  <h2>Profile update</h2>
+                  <p>Asosiy ma’lumotlar va parolni yangilang.</p>
+                </div>
+              </div>
+              <form id="profileUpdateForm" class="profile-update-grid">
+                <div class="settings-card">
+                  <div class="card-title-row">
+                    <h3>Profile sozlamalari</h3>
+                    <span>Asosiy ma’lumotlar</span>
+                  </div>
+                  <label>
+                    <span>Ism</span>
+                    <input name="name" type="text" minlength="2" maxlength="100" placeholder="Ism" />
+                  </label>
+                  <label>
+                    <span>Telefon</span>
+                    <input name="phone" type="tel" minlength="5" maxlength="32" placeholder="+998901234567" />
+                  </label>
+                  <label>
+                    <span>Yangi rasm</span>
+                    <input name="image" type="file" accept="image/*" />
+                  </label>
+                  <button class="primary-btn" type="submit">Saqlash</button>
+                </div>
+
+                <div class="settings-card">
+                  <div class="card-title-row">
+                    <h3>Parolni o‘zgartirish</h3>
+                    <span>Security</span>
+                  </div>
+                  <label>
+                    <span>Yangi parol</span>
+                    <input name="password" type="password" minlength="6" maxlength="128" placeholder="Yangi parol" />
+                  </label>
+                  <button class="secondary-btn" type="submit">Parolni yangilash</button>
+                  <div id="profileUpdateResult" class="verify-result">Yangilash natijasi shu yerda chiqadi.</div>
+                </div>
+              </form>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="./script.js?v=20260517-auth2"></script>
+  </body>
+</html>
